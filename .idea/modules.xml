@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/commons.iml" filepath="$PROJECT_DIR$/.idea/modules/commons.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scalaDB.iml" filepath="$PROJECT_DIR$/.idea/modules/scalaDB.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scalatextdb.iml" filepath="$PROJECT_DIR$/.idea/modules/scalatextdb.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scalatextdb-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scalatextdb-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serializations.iml" filepath="$PROJECT_DIR$/.idea/modules/serializations.iml" />
+    </modules>
+  </component>
+</project>
