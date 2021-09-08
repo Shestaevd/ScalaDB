@@ -26,7 +26,7 @@ private[shestaev] object FileUnit {
         _ <- dir.delete().pure[IO]
       } yield errOpt
     } else {
-      new NotADirectory()
+      NotADirectory()
         .some
         .pure[IO]
     }
@@ -38,7 +38,7 @@ private[shestaev] object FileUnit {
       .pure[IO]
       .flatMap {
         case dir if !dir.exists() || dir.isFile  =>
-          new NotADirectory().asLeft[List[File]].pure[IO]
+          NotADirectory().asLeft[List[File]].pure[IO]
         case dir => dir
           .listFiles()
           .toList
@@ -51,15 +51,15 @@ private[shestaev] object FileUnit {
       .pure[IO]
       .map(file => if(file.exists() && file.isDirectory) file else { file.mkdir(); file} ).attempt
 
-  def writeToFile[A <: DBEntity](dbPath: File, dirPath: String, selfPath: String, entity: A): IO[Either[Throwable, File]] =
+  def writeToFile[A <: DBEntity](dbPath: File, entity: DBFile[A]): IO[Either[Throwable, File]] =
     for {
-      _ <- new File(dbPath.getPath + dirPath)
+      _ <- new File(dbPath + / + entity.dir.path)
         .pure[IO]
         .map(file => if (!file.exists()) file.mkdir())
-      out <- new FileOutputStream(dbPath + / + selfPath)
+      out <- new FileOutputStream(dbPath + / + entity.dir.self)
         .pure[IO]
         .bracket(_.write(ByteSerialization.serialize(entity)).pure[IO])(_.flush().pure[IO])
-        .as(new File(dbPath + / + selfPath))
+        .as(new File(dbPath + / + entity.dir.self))
         .attempt
     } yield out
 

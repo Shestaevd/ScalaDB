@@ -32,7 +32,7 @@ class ScalaDB(dbPath: String) {
     ???
   }
 
-  def map[T <: DBEntity, R<: DBEntity](mapFunc: T => R): ScalaDB = {
+  def map[T <: DBEntity, R <: DBEntity](mapFunc: T => R): ScalaDB = {
     ???
   }
 

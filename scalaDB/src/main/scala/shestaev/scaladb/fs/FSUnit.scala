@@ -1,6 +1,7 @@
 package shestaev.scaladb.fs
 
 import cats.effect.IO
+import cats.implicits.catsSyntaxEitherId
 import shestaev.scaladb.Exceptions.{FileIsBlockedByAnotherPID, FileIsNotBlockedForChanges}
 import shestaev.scaladb.context.{Blocking, DBFile, Free, PID}
 import shestaev.scaladb.entity.DBEntity
@@ -15,8 +16,8 @@ private[shestaev] object FSUnit {
     (dbResource: DBFile[DBEntity])
     (func: DBEntity => A): Either[Throwable, A] =
       dbResource match {
-        case Blocking(thisPid, entity, _) => if (thisPid.equalPid(pid)) Right[Throwable, A](func(entity)) else Left[Throwable, A](FileIsBlockedByAnotherPID())
-        case Free(_ ,_) => Left[Throwable, A](FileIsNotBlockedForChanges())
+        case Blocking(thisPid, entity, _) => if (thisPid.equalPid(pid)) func(entity).asRight[Throwable] else FileIsBlockedByAnotherPID().asLeft[A]
+        case Free(_ ,_) => FileIsBlockedByAnotherPID().asLeft[A]
       }
 
   def inSource[A, B](data: Seq[A])(func: A => B): IO[Seq[B]] =

@@ -79,7 +79,7 @@ class FileUnitSpec extends AnyFlatSpec {
       println("testDir has been created")
       testDir
     } else testDir)
-    out <- writeToFile(dir, target.dir.path, target.dir.self, target.entity ).flatMap {
+    out <- writeToFile(dir, target).flatMap {
       case Left(error) => throw error
       case Right(file) => readFromFile[Foo](file).flatMap({
         case Left(error) => throw error

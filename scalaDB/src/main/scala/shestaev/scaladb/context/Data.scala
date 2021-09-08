@@ -9,9 +9,3 @@ sealed trait Data[A] {
 }
 
 case class DBData(path: String, override val data: mutable.LinkedHashMap[String, DBFile[DBEntity]] =  mutable.LinkedHashMap.empty) extends Data[DBFile[DBEntity]]
-
-object DBData {
-  def blockFile(dbFile: DBFile[DBEntity])(dbData: DBData): PID = {
-    ???
-  }
-}
