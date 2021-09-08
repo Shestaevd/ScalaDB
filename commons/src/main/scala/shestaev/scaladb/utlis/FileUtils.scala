@@ -2,8 +2,6 @@ package shestaev.scaladb.utlis
 
 import shestaev.scaladb.entity.{DBEntity, DBEntityPath}
 
-import java.io.File
-
 
 
 object FileUtils {
@@ -12,4 +10,5 @@ object FileUtils {
 
   def create[A <: DBEntity](obj: A): DBEntityPath =
     DBEntityPath(obj.name + /, obj.name + / + obj.primaryKey)
+
 }

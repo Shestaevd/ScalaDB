@@ -4,7 +4,6 @@ lazy val scalaDB = (project in file("scalaDB"))
   .settings(scalaTest)
   .settings(libraryDependencies += dependencies.catsEffect)
   .settings(libraryDependencies ++= dependencies.scalaTest)
-  .settings(libraryDependencies ++= dependencies.akkaStreams)
   .dependsOn(commons, serializations)
 
 lazy val commons = (project in file("commons"))
@@ -29,7 +28,6 @@ lazy val scalaTest = Seq(
 
 lazy val dependencies = new {
   private val scalaTestV = "3.2.7"
-  private val AkkaVersion = "2.6.14"
 
   private val catsEffectV = "3.1.1"
 
@@ -45,12 +43,6 @@ lazy val dependencies = new {
   // optional I/O library
   lazy val fs2IO = "co.fs2" %% "fs2-io" % sf2V
 
-  lazy val akkaStreams= Seq(
-    "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
-    "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % Test
-  )
-
-  // https://mvnrepository.com/artifact/org.typelevel/cats-effect
   lazy val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectV
 
 

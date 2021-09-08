@@ -1,14 +1,16 @@
 package shestaev.scaladb
 
 import cats.effect.IO
+import cats.effect.unsafe.IORuntime
 import cats.effect.unsafe.implicits.global
+import cats.implicits.catsSyntaxApplicativeId
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.must.Matchers.{exist, not}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import shestaev.scaladb.TestData.foo
 import shestaev.scaladb.context.DBFile
-import shestaev.scaladb.fs.FileUnit.{deleteDir, readDir, writeToFile}
+import shestaev.scaladb.fs.FileUnit.{deleteDir, readDir, readFromFile, writeToFile}
 import shestaev.scaladb.utlis.FileUtils./
 
 import java.io.File
@@ -56,19 +58,40 @@ class FileUnitSpec extends AnyFlatSpec {
   "Reading directory test" should "create a dir of some junk and read it to array of files" in {
     val testDir = new File(this.testDir)
 
-    val result = (IO(createJunk(this.testDir)) >> readDir(testDir) <* deleteDir(testDir)).unsafeRunSync()
+    val result = (
+      for { _ <- IO(createJunk(this.testDir))
+            out <- readDir(testDir)
+            _ <- deleteDir(testDir)} yield out
+      ).unsafeRunSync().toOption.get
 
-    result.flatMap(_.toOption) should not be Matchers.empty
+    result should not be Matchers.empty
   }
 
-  "Serialization test" should "write given object to file" in {
-    import shestaev.scaladb.ByteSerialization.byteSerialization
+  "Serialization test" should "write given object to file and read it back" in {
 
     val testDir = new File(this.testDir)
 
-    val file = (writeToFile(this.testDir, DBFile(foo)) <* deleteDir(testDir)).unsafeRunSync().toOption
+    val target = DBFile(foo)
 
-    file should not be Matchers.empty
+   val fooBack = for {
+    dir <- IO(if (!testDir.exists()) {
+      testDir.mkdir()
+      println("testDir has been created")
+      testDir
+    } else testDir)
+    out <- writeToFile(dir, target.dir.path, target.dir.self, target.entity ).flatMap {
+      case Left(error) => throw error
+      case Right(file) => readFromFile[Foo](file).flatMap({
+        case Left(error) => throw error
+        case Right(obj) => obj.entity.pure[IO]
+      })
+    }
+    _ <- deleteDir(testDir)
+    } yield out
+
+    fooBack.unsafeRunSync() shouldBe foo
+
   }
+
 
 }

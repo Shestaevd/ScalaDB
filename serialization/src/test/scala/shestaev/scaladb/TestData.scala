@@ -2,9 +2,8 @@ package shestaev.scaladb
 
 import shestaev.scaladb.entity.DBEntity
 
-case class Foo(foo1: String, foo2: Int, foo3: Double) extends DBEntity {
-  override def runtimeClass: Class[_] = Foo.getClass
-}
+case class Foo(foo1: String, foo2: Int, foo3: Double) extends DBEntity
+
 
 object TestData {
 

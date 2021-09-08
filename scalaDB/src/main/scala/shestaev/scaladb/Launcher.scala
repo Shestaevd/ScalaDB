@@ -10,15 +10,17 @@ import scala.collection.mutable
 
 object Launcher extends IOApp {
 
-  val linkedHashMap: mutable.Map[String, DBEntity] = mutable.LinkedHashMap.empty[String, DBEntity]
-
   override def run(args: List[String]): IO[ExitCode] = {
 
-    IO(ExitCode.Success)
-  }
+//    for { _ <- IO{println("")} } yield()
 
-  def hah(map: mutable.Map[String, Int]): Unit = {
-    map.addOne("damn" -> 4)
+//    val program = for {
+//      _ <- IO { println("Welcome to Scala!  What's your name?") }
+//      name <- IO { Console.readLine }
+//      _ <- IO { println(s"Well hello, $name!") }
+//    } yield ()
+
+    IO(ExitCode.Success)
   }
 
 
