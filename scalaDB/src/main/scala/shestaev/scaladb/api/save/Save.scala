@@ -2,7 +2,7 @@ package shestaev.scaladb.api.save
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import cats.implicits.catsSyntaxApplicativeId
+import cats.implicits.{catsSyntaxApplicativeId, catsSyntaxEitherId}
 import shestaev.scaladb.IO.IOUtils.{IOImplicitEither, suspendIO}
 import shestaev.scaladb.context.{Blocking, DBData, DBFile, Free, PID}
 import shestaev.scaladb.entity.DBEntity
@@ -14,28 +14,30 @@ object Save {
 
   def putUnsafe(dbData: DBData)(value: DBFile[DBEntity]): Option[DBEntity] = put(dbData)(value).keepRight.unsafeRunSync()
 
-  def put(dbData: DBData)(entity: DBFile[DBEntity]): IO[Either[Throwable, DBEntity]] = {
-
+  def put(dbData: DBData)(newValue: DBFile[DBEntity]): IO[Either[Throwable, DBEntity]] =
     for {
-      value <- blockFileToChange(2)(dbData)(entity)
-      out <- writeToFS(
-        dbData.path,
-        dbData.data.getOrElse(value.entity.primaryKey, value)
-      ).map(_.map(_ => value.entity))
-      _ <- dbData.data.put(value.entity.primaryKey, value).pure[IO]
-    // _ <- разблокировать
+      oldValue <- blockFileToChange(2)(dbData)(newValue)
+      ioResult <- writeToFS(dbData.path, newValue)
+      out <- unblockFile(dbData)(newValue, oldValue)(ioResult)
     } yield out
 
-  }
+  private def unblockFile(dbData: DBData)(target: DBFile[DBEntity], old: Option[DBFile[DBEntity]])(either: Either[Throwable, File]): IO[Either[Throwable, DBEntity]] =
+    either.fold(error => {
+      old.foreach(dbFile => dbData.data.put(dbFile.entity.primaryKey, dbFile.free))
+      error.asLeft[DBEntity]
+    }, _ => {
+      dbData.data.put(target.entity.primaryKey, target.free)
+      target.entity.asRight[Throwable]
+    }).pure[IO]
 
-  private def blockFileToChange(suspendIfBlocked: Int)(dbData: DBData)(target: DBFile[DBEntity]): IO[DBFile[DBEntity]] = {
-    dbData.data.get(target.entity.primaryKey).fold {
-      dbData.data.put(target.entity.primaryKey, target.block(PID()))
-      target.pure[IO]
-    } {
-      case _: Free[DBEntity] =>
-        dbData.data.put(target.entity.primaryKey, target.block(PID()))
-        target.pure[IO]
+  private def blockFileToChange(suspendIfBlocked: Int)(dbData: DBData)(target: DBFile[DBEntity]): IO[Option[DBFile[DBEntity]]] = {
+    dbData.data.get(target.entity.primaryKey)
+      .fold {
+        IO(Option.empty[DBFile[DBEntity]])
+      } {
+      case free: Free[DBEntity] =>
+        dbData.data.put(free.entity.primaryKey, free.block(PID()))
+        free.pure[Option].pure[IO]
       case _: Blocking[DBEntity] =>
         suspendIO(suspendIfBlocked) >> blockFileToChange(suspendIfBlocked)(dbData)(target)
     }

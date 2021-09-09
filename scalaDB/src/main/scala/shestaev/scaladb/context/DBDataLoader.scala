@@ -8,7 +8,7 @@ import shestaev.scaladb.IO.IOUtils.IOImplicitString
 import java.io.File
 
 object DBDataLoader {
-  def pull(dbPath: String): Either[DBData, Throwable] = {
+  def pull(dbPath: String): Either[Throwable, DBData] = {
     IO.fromOption(Option(dbPath))(new DBPathNotSpecified).toFile
     ???
   }

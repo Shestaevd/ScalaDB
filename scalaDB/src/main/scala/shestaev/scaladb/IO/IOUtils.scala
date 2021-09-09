@@ -19,14 +19,14 @@ private[shestaev] object IOUtils {
     def isDirectory: IO[Either[Throwable, File]] = io.toFile.map {
       case left: Left[Throwable, File]                     => left
       case right @ Right(resource) if resource.isDirectory => right
-      case _                                               => Left(new NotADirectory())
+      case _                                               => Left(NotADirectory())
     }
   }
   implicit class IOImplicitEitherFile(io: IO[Either[Throwable, File]]) {
     def isDirectory: IO[Either[Throwable, File]] = io.map {
       case left: Left[Throwable, File]                     => left
       case right @ Right(resource) if resource.isDirectory => right
-      case _                                               => Left(new NotADirectory())
+      case _                                               => Left(NotADirectory())
     }
   }
 
